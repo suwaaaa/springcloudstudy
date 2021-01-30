@@ -40,7 +40,7 @@ public class BeanConfig {
 	/**
 	  *  myRule
 	  *  Description:
-	  *  
+	  *                                            默认为轮询策略
 	  *  切换其他的均衡规则
 	  *  
 	  *  @author  suwaaaa  DateTime 2021年1月28日 下午8:48:56
