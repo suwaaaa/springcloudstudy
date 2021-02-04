@@ -3,6 +3,8 @@ package com.suwaaaa.springcloud.controller;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.validation.Valid;
 
@@ -47,7 +49,7 @@ public class WebController {
 		
 		//   string------ResponseEntity<user>------ResponseEntity<map>
 		ResponseEntity<String>  responseEntity = restTemplate
-				.getForEntity("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/hello", String.class);
+				.getForEntity("http://SPRING-CLOUD-EUREKA-PROVIDER/service/hello", String.class);
 		int getStatusCodeValue = responseEntity.getStatusCodeValue();
 		HttpStatus astatus =   responseEntity.getStatusCode();
 		HttpHeaders httpheader = responseEntity.getHeaders();
@@ -64,7 +66,7 @@ public class WebController {
 	@RequestMapping("/web/setUser/{name}")
 	public User setUser() {
 		ResponseEntity<User>  responseEntity = restTemplate
-				.getForEntity("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/setUser", User.class);   //      	//    ?id={id}&name={name}&phone={phone}
+				.getForEntity("http://SPRING-CLOUD-EUREKA-PROVIDER/service/setUser", User.class);   //      	//    ?id={id}&name={name}&phone={phone}
 		int getStatusCodeValue = responseEntity.getStatusCodeValue();
 		HttpStatus astatus =   responseEntity.getStatusCode();
 		HttpHeaders httpheader = responseEntity.getHeaders();
@@ -92,12 +94,12 @@ public class WebController {
 		dataMap.add("phone", 44545669);
 		
 		User  userdata = restTemplate
-				.postForObject("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/postUser", dataMap,User.class );
+				.postForObject("http://SPRING-CLOUD-EUREKA-PROVIDER/service/postUser", dataMap,User.class );
 
 		System.out.println(userdata.getName()+userdata.getAddress());
 		
 		return restTemplate
-				.postForObject("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/postUser", dataMap,User.class ); 
+				.postForObject("http://SPRING-CLOUD-EUREKA-PROVIDER/service/postUser", dataMap,User.class ); 
 	}																																								
 	
 	
@@ -108,7 +110,7 @@ public class WebController {
 		dataMap.add("address", "江梅");
 		dataMap.add("phone", 64846449);
 		
-		restTemplate.put("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/putUser",dataMap);
+		restTemplate.put("http://SPRING-CLOUD-EUREKA-PROVIDER/service/putUser",dataMap);
 	
 		return "success  ---  /web/putUser  ---" ; 
 	}
@@ -123,7 +125,7 @@ public class WebController {
 		paramMap.put("phone",	 45646);
 		
 		
-		restTemplate.delete("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/deleteUser?"
+		restTemplate.delete("http://SPRING-CLOUD-EUREKA-PROVIDER/service/deleteUser?"
 														+ "name={name}&address={address}&phone={phone}",paramMap);
 	
 		return "success  ---/web/deleteUser---  " ; 
@@ -143,7 +145,7 @@ public class WebController {
 	public String hystrix() {
 		
 		ResponseEntity<String>  responseEntity = restTemplate
-				.getForEntity("http://SPRING-CLOUD-EUREKA-PROVIDER00/service/hello", String.class);
+				.getForEntity("http://SPRING-CLOUD-EUREKA-PROVIDER/service/hello", String.class);
 		 
 		int getStatusCodeValue = responseEntity.getStatusCodeValue();
 		HttpStatus astatus =   responseEntity.getStatusCode();
@@ -156,7 +158,7 @@ public class WebController {
 	}
 	
 	public String feedback(Throwable throwable) {
-		
+		//      融断的回调方法，也就是降级方法
 		System.out.println("异常：===="+throwable.getMessage());
 		return "error"+"+++使用Hystrix服务熔断+++";	
 	} 
@@ -173,16 +175,24 @@ public class WebController {
 	  * 
 	  *  @author  suwaaaa  DateTime 2021年1月31日 上午2:59:40
 	  *  @return
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	  */
 	@RequestMapping("/web/hystrixcommand")
-	public String hystrixcommand() {
+	public String hystrixcommand() throws InterruptedException, ExecutionException {
 		
 		MyHystrixCommand myHystrixCommand = new MyHystrixCommand(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("")), restTemplate);
 		
-		String mystring = myHystrixCommand.execute();
-		 
 		
-		return "调用远程springcloud的远程服务"  + mystring+"测试Hystrix服务熔断";
+		//		同步服务调用，该方法执行后，会等待结果，拿到了远程的返回结果，该方法才返回
+//		String mystring = myHystrixCommand.execute();
+		 
+		//    异步调用服务
+		Future<String> future = myHystrixCommand.queue();
+		//    阻塞的方法，直到拿到结果才返回
+		String astring = future.get();
+		
+		return "调用 springcloud的远程服务"  + astring +"测试Hystrix服务熔断";
 	}
 	
 	

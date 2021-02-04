@@ -1,10 +1,8 @@
 package com.suwaaaa.springcloud.HystrixConfig;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.netflix.hystrix.HystrixCommand;
-import com.netflix.hystrix.HystrixCommandGroupKey;
 
 
 
@@ -40,6 +38,8 @@ public class MyHystrixCommand extends HystrixCommand<String>{
 	@Override
 	public String getFallback() {
 		
+		Throwable throwable = getExecutionException();
+		System.out.println(throwable.getMessage() + "++++++++++" + throwable.getStackTrace());
 		return "自定义请求服务熔断    如果服务超时，异常，不可用则触发这个方法++++++可以实现服务熔断和服务降级";
 	}
 	
