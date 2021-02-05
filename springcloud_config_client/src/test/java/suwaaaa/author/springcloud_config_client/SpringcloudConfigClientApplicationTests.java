@@ -1,10 +1,10 @@
-package suwaaaa.author.spring_cloud_config_server;
+package suwaaaa.author.springcloud_config_client;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpringCloudConfigClientApplicationTests {
+class SpringcloudConfigClientApplicationTests {
 
 	@Test
 	void contextLoads() {
